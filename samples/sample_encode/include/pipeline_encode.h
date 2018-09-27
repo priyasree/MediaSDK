@@ -170,7 +170,7 @@ struct sInputParams
     bool bUncut;
     bool shouldUseShifted10BitEnc;
     bool shouldUseShifted10BitVPP;
-	bool IsSourceMSB;
+    bool IsSourceMSB;
 
     msdk_char *RoundingOffsetFile;
     msdk_char DumpFileName[MSDK_MAX_FILENAME_LEN];

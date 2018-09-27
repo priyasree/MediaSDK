@@ -915,9 +915,9 @@ mfxStatus CDecodingPipeline::InitVppParams()
 
     // P010 video surfaces should be shifted
     if ((m_mfxVppVideoParams.vpp.Out.FourCC == MFX_FOURCC_P010 || m_mfxVppVideoParams.vpp.Out.FourCC == MFX_FOURCC_Y210)
-		&& m_memType != SYSTEM_MEMORY)
+        && m_memType != SYSTEM_MEMORY)
     {
-		m_mfxVppVideoParams.vpp.Out.Shift = 1;
+        m_mfxVppVideoParams.vpp.Out.Shift = 1;
     }
 
     return MFX_ERR_NONE;
@@ -997,7 +997,7 @@ mfxStatus CDecodingPipeline::AllocFrames()
 
     mfxU16 nSurfNum = 0; // number of surfaces for decoder
     mfxU16 nVppSurfNum = 0; // number of surfaces for vpp
-		
+        
     MSDK_ZERO_MEMORY(Request);
 
     MSDK_ZERO_MEMORY(VppRequest[0]);
@@ -1007,11 +1007,11 @@ mfxStatus CDecodingPipeline::AllocFrames()
     MSDK_IGNORE_MFX_STS(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
     MSDK_CHECK_STATUS(sts, "m_pmfxDEC->Query failed");
 
-	// Workaround for VP9 codec
-	if ((m_mfxVideoParams.mfx.FrameInfo.FourCC == MFX_FOURCC_P010 || m_mfxVideoParams.mfx.FrameInfo.FourCC == MFX_FOURCC_Y210) && m_mfxVideoParams.mfx.CodecId==MFX_CODEC_VP9)
-	{
-		m_mfxVideoParams.mfx.FrameInfo.Shift = 1;
-	}
+    // Workaround for VP9 codec
+    if ((m_mfxVideoParams.mfx.FrameInfo.FourCC == MFX_FOURCC_P010 || m_mfxVideoParams.mfx.FrameInfo.FourCC == MFX_FOURCC_Y210) && m_mfxVideoParams.mfx.CodecId==MFX_CODEC_VP9)
+    {
+        m_mfxVideoParams.mfx.FrameInfo.Shift = 1;
+    }
 
     // calculate number of surfaces required for decoder
     sts = m_pmfxDEC->QueryIOSurf(&m_mfxVideoParams, &Request);

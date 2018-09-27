@@ -70,7 +70,7 @@ typedef enum
     CTT_ERR_UNSUPPORTED                 = -3,  /* feature not supported */
     CTT_ERR_NOT_INITIALIZED             = -4,  /* the library not  initialized */
     CTT_ERR_NOT_FOUND                   = -5,  /* the specified object is not found */
-    CTT_ERR_ALREADY_INITIALIZED	        = -6,  /* the library already initialized */
+    CTT_ERR_ALREADY_INITIALIZED         = -6,  /* the library already initialized */
     CTT_ERR_NO_DATA                     = -7,  /* no or wrong metrics data from driver */
     CTT_ERR_OUT_OF_RANGE                = -8,  /* parameter out of range */
     CTT_ERR_DRIVER_NOT_FOUND            = -9,  /* i915 driver not installed */

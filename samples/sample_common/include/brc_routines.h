@@ -299,9 +299,9 @@ protected:
         numFrames = numFrames < m_slidingWindow.size() ? numFrames : (mfxU32)m_slidingWindow.size();
         for (mfxU32 i = 0; i < numFrames; i++)
         {
-			mfxU32 frame_size = m_slidingWindow[(m_currPosInWindow + m_slidingWindow.size() - i) % m_slidingWindow.size()];
-			if (bCheckSkip && (frame_size < m_avgBitPerFrame / 3))
-				frame_size = m_avgBitPerFrame / 3;
+            mfxU32 frame_size = m_slidingWindow[(m_currPosInWindow + m_slidingWindow.size() - i) % m_slidingWindow.size()];
+            if (bCheckSkip && (frame_size < m_avgBitPerFrame / 3))
+                frame_size = m_avgBitPerFrame / 3;
             size += frame_size;
             //printf("GetLastFrames: %d) %d sum %d\n",i,m_slidingWindow[(m_currPosInWindow + m_slidingWindow.size() - i) % m_slidingWindow.size() ], size);
         }

@@ -152,7 +152,7 @@ void CEncodingPipeline::PrintInfo()
     if (param.mfx.IdrInterval == 0xffff)
         msdk_printf(MSDK_STRING("\nIDR Interval     :\tInfinite"));
     else
-	msdk_printf(MSDK_STRING("\nIDR Interval     :\t%d"), param.mfx.IdrInterval);
+        msdk_printf(MSDK_STRING("\nIDR Interval     :\t%d"), param.mfx.IdrInterval);
 
     msdk_printf(MSDK_STRING("\nGopRefDist       :\t%d"), param.mfx.GopRefDist);
     msdk_printf(MSDK_STRING("\nNumRefFrame      :\t%d"), param.mfx.NumRefFrame);

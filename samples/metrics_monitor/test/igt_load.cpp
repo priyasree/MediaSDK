@@ -83,8 +83,8 @@ const intel_execution_engine intel_execution_engines [] = {
 
 const int BATCH_SIZE = 4096;
 
-#define MI_BATCH_BUFFER_START	(0x31 << 23)
-#define MI_BATCH_BUFFER_END	(0xA << 23)
+#define MI_BATCH_BUFFER_START   (0x31 << 23)
+#define MI_BATCH_BUFFER_END     (0xA << 23)
 #define MI_ARB_CHK (0x5 << 23)
 #define LOCAL_I915_EXEC_BSD_SHIFT      (13)
 #define LOCAL_I915_EXEC_BSD_MASK       (3 << LOCAL_I915_EXEC_BSD_SHIFT)
