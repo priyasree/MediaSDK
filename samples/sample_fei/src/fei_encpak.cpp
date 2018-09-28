@@ -1085,6 +1085,7 @@ mfxStatus FEI_EncPakInterface::EncPakOneFrame(iTask* eTask)
                 {
                     // Ignore warnings if output is available
                     sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                    MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                     mdprintf(stderr, "ENC synced : %d\n", sts);
 
                     break;
@@ -1097,6 +1098,7 @@ mfxStatus FEI_EncPakInterface::EncPakOneFrame(iTask* eTask)
                     if (m_SyncPoint)
                     {
                         sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                        MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                         mdprintf(stderr, "ENC synced : %d\n", sts);
                     }
 
@@ -1150,6 +1152,7 @@ mfxStatus FEI_EncPakInterface::EncPakOneFrame(iTask* eTask)
                 {
                     // Ignore warnings if output is available
                     sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                    MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                     mdprintf(stderr, "PAK synced : %d\n", sts);
 
                     break;
@@ -1167,6 +1170,7 @@ mfxStatus FEI_EncPakInterface::EncPakOneFrame(iTask* eTask)
                     if (m_SyncPoint)
                     {
                         sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                        MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                         mdprintf(stderr, "PAK synced : %d\n", sts);
                     }
 

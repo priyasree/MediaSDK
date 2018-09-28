@@ -186,6 +186,7 @@ mfxStatus MFX_VppInterface::VPPoneFrame(mfxFrameSurface1* pSurf_in, mfxFrameSurf
         {
             // Ignore warnings if output is available
             sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+            MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
             mdprintf(stderr, "VPP synced : %d\n", sts);
 
             break;
@@ -198,6 +199,7 @@ mfxStatus MFX_VppInterface::VPPoneFrame(mfxFrameSurface1* pSurf_in, mfxFrameSurf
             if (m_SyncPoint)
             {
                 sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                 mdprintf(stderr, "VPP synced : %d\n", sts);
             }
 
@@ -409,6 +411,7 @@ mfxStatus MFX_DecodeInterface::GetOneFrame(mfxFrameSurface1* & pSurf)
         {
             // Ignore warnings if output is available
             sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+            MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
             mdprintf(stderr, "DECODE synced : %d\n", sts);
 
             break;
@@ -426,6 +429,7 @@ mfxStatus MFX_DecodeInterface::GetOneFrame(mfxFrameSurface1* & pSurf)
             if (m_SyncPoint)
             {
                 sts = m_pmfxSession->SyncOperation(m_SyncPoint, MSDK_WAIT_INTERVAL);
+                MSDK_CHECK_ERR_NONE_STATUS(sts, MFX_ERR_ABORTED, "SyncOperation failed");
                 mdprintf(stderr, "DECODE synced : %d\n", sts);
             }
 
