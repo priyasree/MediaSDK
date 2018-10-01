@@ -180,16 +180,27 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface)
 
     mfxU32 nBytesPerPixel = (pInfo.FourCC == MFX_FOURCC_P010 || pInfo.FourCC == MFX_FOURCC_P210 ) ? 2 : 1;
 
-    if (MFX_FOURCC_YUY2 == pInfo.FourCC || MFX_FOURCC_RGB4 == pInfo.FourCC || MFX_FOURCC_BGR4 == pInfo.FourCC || pInfo.FourCC == MFX_FOURCC_Y210 || pInfo.FourCC == MFX_FOURCC_Y410)
+    if (   MFX_FOURCC_YUY2 == pInfo.FourCC
+        || MFX_FOURCC_RGB4 == pInfo.FourCC
+        || MFX_FOURCC_BGR4 == pInfo.FourCC
+        || MFX_FOURCC_AYUV == pInfo.FourCC
+        || MFX_FOURCC_A2RGB10 == pInfo.FourCC
+#if (MFX_VERSION >= 1027)
+        || MFX_FOURCC_Y210 == pInfo.FourCC
+        || MFX_FOURCC_Y410 == pInfo.FourCC
+#endif
+    )
     {
         //Packed format: Luminance and chrominance are on the same plane
         switch (m_ColorFormat)
         {
+        case MFX_FOURCC_A2RGB10:
+        case MFX_FOURCC_AYUV:
         case MFX_FOURCC_RGB4:
         case MFX_FOURCC_BGR4:
             pitch = pData.Pitch;
             ptr = MSDK_MIN( MSDK_MIN(pData.R, pData.G), pData.B);
-            ptr = ptr + pInfo.CropX + pInfo.CropY * pData.Pitch;
+            ptr = ptr + pInfo.CropX*4 + pInfo.CropY * pData.Pitch;
 
             for(i = 0; i < h; i++)
             {
@@ -215,21 +226,6 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface)
                 }
             }
             break;
-        case MFX_FOURCC_AYUV:
-            pitch = pData.Pitch;
-            ptr = pData.Y + pInfo.CropX*4 + pInfo.CropY * pData.Pitch;
-
-            for (i = 0; i < h; i++)
-            {
-                nBytesRead = (mfxU32)fread(ptr + i * pitch, 4, w, m_files[vid]);
-
-                if ((mfxU32)w != nBytesRead)
-                {
-                    return MFX_ERR_MORE_DATA;
-                }
-            }
-            break;
-
 #if (MFX_VERSION >= 1027)
         case MFX_FOURCC_Y210:
         case MFX_FOURCC_Y410:
@@ -2447,8 +2443,16 @@ mfxU16 FourCCToChroma(mfxU32 fourCC)
         return MFX_CHROMAFORMAT_YUV420;
     case MFX_FOURCC_NV16:
     case MFX_FOURCC_P210:
+#if (MFX_VERSION >= 1027)
+    case MFX_FOURCC_Y210:
+#endif
     case MFX_FOURCC_YUY2:
         return MFX_CHROMAFORMAT_YUV422;
+#if (MFX_VERSION >= 1027)
+    case MFX_FOURCC_Y410:
+    case MFX_FOURCC_A2RGB10:
+#endif
+    case MFX_FOURCC_AYUV:
     case MFX_FOURCC_RGB4:
         return MFX_CHROMAFORMAT_YUV444;
     }
