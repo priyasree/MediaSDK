@@ -2946,8 +2946,8 @@ mfxStatus MfxHwH264Encode::CheckEncodeFrameParam(
             MFX_CHECK(feiParam.Func != MFX_FEI_FUNCTION_ENCODE, MFX_ERR_UNDEFINED_BEHAVIOR);
         }
 
-        mfxExtOpaqueSurfaceAlloc * extOpaq = GetExtBuffer(video);
-        bool opaq = extOpaq->In.Surfaces != 0;
+        mfxExtOpaqueSurfaceAlloc & extOpaq = GetExtBufferRef(video);
+        bool opaq = extOpaq.In.Surfaces != 0;
 
         MFX_CHECK((surface->Data.Y == 0) == (surface->Data.UV == 0), MFX_ERR_UNDEFINED_BEHAVIOR);
         MFX_CHECK(surface->Data.Pitch < 0x8000, MFX_ERR_UNDEFINED_BEHAVIOR);
@@ -3538,7 +3538,7 @@ void MfxHwH264Encode::PrepareSeiMessageBuffer(
     mfxU32 fieldPicFlag       = (task.GetPicStructForEncode() != MFX_PICSTRUCT_PROGRESSIVE);
     mfxU32 secondFieldPicFlag = (task.GetFirstField() != fieldId);
     mfxU32 idrPicFlag         = (task.m_type[fieldId] & MFX_FRAMETYPE_IDR);
-    mfxU32 isIPicture = (task.m_type[fieldId] & MFX_FRAMETYPE_I);
+    mfxU32 isIPicture         = (task.m_type[fieldId] & MFX_FRAMETYPE_I);
     mfxU32 recoveryPoint      = IsRecoveryPointSeiMessagePresent(
         task.m_ctrl.Payload,
         task.m_ctrl.NumPayload,
@@ -3569,7 +3569,7 @@ void MfxHwH264Encode::PrepareSeiMessageBuffer(
         needBufferingPeriod = needPicTimingSei = 0; // in CQP HRD mode application inserts BP and PT SEI itself
 
     mfxU32 needAtLeastOneSei =
-        (task.m_ctrl.Payload && task.m_ctrl.NumPayload > secondFieldPicFlag && task.m_ctrl.Payload[secondFieldPicFlag] != 0) ||
+        (task.m_ctrl.NumPayload > secondFieldPicFlag && task.m_ctrl.Payload[secondFieldPicFlag] != 0) ||
         (fillerSize > 0)    ||
         needBufferingPeriod ||
         needPicTimingSei    ||
@@ -3723,7 +3723,7 @@ void MfxHwH264Encode::PrepareSeiMessageBufferDepView(
         needMvcNestingSei |= (fillerSize != 0);
 
     mfxU32 needNotNestingSei =
-        (task.m_ctrl.Payload && task.m_ctrl.NumPayload > 0) ||
+        (task.m_ctrl.NumPayload > 0)                 ||
         (fillerSize > 0 && IsOff(extOpt.ViewOutput)) ||
         needMarkingRepetitionSei;
 

@@ -363,21 +363,15 @@ mfxStatus SetRateControl(
     VAEncMiscParameterBuffer *misc_param;
     VAEncMiscParameterRateControl *rate_param;
 
+    mfxU8 numTL = par.m_numLayers;
     bool TL_attached = false;
+    if (numTL == 0) 
+        numTL = 1;
+    else
+        TL_attached = true;
+
     mfxExtVP9TemporalLayers& extTL = GetExtBufferRef(par);
 
-    mfxU8 numTL = 0;
-    for (numTL = 0; numTL < 4 && extTL.Layer[numTL].FrameRateScale != 0; numTL++);
-    if (numTL == 0)
-    {
-        numTL = 1;
-    }
-    else
-    {
-        TL_attached = true;
-    }
-
-    rateParamBuf_ids.resize(numTL);
     for (VABufferID id : rateParamBuf_ids)
     {
         if (id != VA_INVALID_ID)
@@ -385,6 +379,8 @@ mfxStatus SetRateControl(
             vaDestroyBuffer(m_vaDisplay, id);
         }
     }
+
+    rateParamBuf_ids.resize(numTL);
 
     for (mfxU8 tl = 0; tl < rateParamBuf_ids.size(); tl++)
     {
@@ -528,7 +524,13 @@ mfxStatus SetFrameRate(
 
     mfxExtVP9TemporalLayers& extTL = GetExtBufferRef(par);
 
-    frameRateBufIds.resize(par.m_numLayers);
+    mfxU8 numTL = par.m_numLayers;
+    bool TL_attached = false;
+    if (numTL == 0) 
+        numTL = 1;
+    else
+        TL_attached = true;
+
     for (VABufferID id : frameRateBufIds)
     {
         if (id != VA_INVALID_ID)
@@ -536,6 +538,8 @@ mfxStatus SetFrameRate(
             vaDestroyBuffer(m_vaDisplay, id);
         }
     }
+
+    frameRateBufIds.resize(numTL);
 
     mfxU32 base_framerate;
     PackMfxFrameRate(par.mfx.FrameInfo.FrameRateExtN, par.mfx.FrameInfo.FrameRateExtD, base_framerate);
@@ -559,7 +563,7 @@ mfxStatus SetFrameRate(
         misc_param->type = VAEncMiscParameterTypeFrameRate;
         frameRate_param = (VAEncMiscParameterFrameRate *)misc_param->data;
 
-        frameRate_param->framerate = base_framerate / extTL.Layer[par.m_numLayers - 1 - tl].FrameRateScale;
+        frameRate_param->framerate = TL_attached ? base_framerate / extTL.Layer[par.m_numLayers - 1 - tl].FrameRateScale : base_framerate;
         frameRate_param->framerate_flags.bits.temporal_id = tl;
 
         vaSts = vaUnmapBuffer(m_vaDisplay, frameRateBufIds[tl]);
@@ -703,15 +707,15 @@ mfxStatus VAAPIEncoder::CreateAuxilliaryDevice(
 
     if (attrs[idx_map[VAConfigAttribEncMacroblockInfo]].value != VA_ATTRIB_NOT_SUPPORTED &&
         attrs[idx_map[VAConfigAttribEncMacroblockInfo]].value)
-        m_caps.SegmentFeatureSupport &= 0b0001;
+        m_caps.SegmentFeatureSupport |= 1 << FEAT_QIDX;
 
     if (attrs[idx_map[VAConfigAttribEncMaxRefFrames]].value != VA_ATTRIB_NOT_SUPPORTED &&
         attrs[idx_map[VAConfigAttribEncMaxRefFrames]].value)
-        m_caps.SegmentFeatureSupport &= 0b0100;
+        m_caps.SegmentFeatureSupport |= 1 << FEAT_REF;
 
     if (attrs[idx_map[VAConfigAttribEncSkipFrame]].value != VA_ATTRIB_NOT_SUPPORTED &&
         attrs[idx_map[VAConfigAttribEncSkipFrame]].value)
-        m_caps.SegmentFeatureSupport &= 0b1000;
+        m_caps.SegmentFeatureSupport |= 1 << FEAT_SKIP;
 
     if (attrs[idx_map[VAConfigAttribEncDynamicScaling]].value != VA_ATTRIB_NOT_SUPPORTED)
     {
@@ -845,9 +849,11 @@ mfxStatus VAAPIEncoder::CreateAccelerationService(VP9MfxVideoParam const & par)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
     mfxSts = SetFrameRate(par, m_vaDisplay, m_vaContextEncode, m_frameRateBufferIds);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
-    mfxSts = SetTemporalStructure(par, m_vaDisplay, m_vaContextEncode, m_tempLayersBufferId);
-    MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
-
+    if (par.m_numLayers)
+    {
+        mfxSts = SetTemporalStructure(par, m_vaDisplay, m_vaContextEncode, m_tempLayersBufferId);
+        MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
+    }
 
     m_frameHeaderBuf.resize(VP9_MAX_UNCOMPRESSED_HEADER_SIZE + MAX_IVF_HEADER_SIZE);
     InitVp9SeqLevelParam(par, m_seqParam);
@@ -876,9 +882,11 @@ mfxStatus VAAPIEncoder::Reset(VP9MfxVideoParam const & par)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
     mfxSts = SetFrameRate(par, m_vaDisplay, m_vaContextEncode, m_frameRateBufferIds);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
-    mfxSts = SetTemporalStructure(par, m_vaDisplay, m_vaContextEncode, m_tempLayersBufferId);
-    MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
-
+    if (par.m_numLayers)
+    {
+        mfxSts = SetTemporalStructure(par, m_vaDisplay, m_vaContextEncode, m_tempLayersBufferId);
+        MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == mfxSts, MFX_ERR_DEVICE_FAILED);
+    }
 
     return MFX_ERR_NONE;
 } // mfxStatus VAAPIEncoder::Reset(MfxVideoParam const & par)
@@ -1078,6 +1086,7 @@ mfxStatus VAAPIEncoder::Execute(
         packed_header_param_buffer.has_emulation_bytes = 1;
         packed_header_param_buffer.bit_length = packedData.DataLength*8;
 
+        MFX_DESTROY_VABUFFER(m_packedHeaderParameterBufferId, m_vaDisplay);
         vaSts = vaCreateBuffer(m_vaDisplay,
                 m_vaContextEncode,
                 VAEncPackedHeaderParameterBufferType,
@@ -1089,6 +1098,7 @@ mfxStatus VAAPIEncoder::Execute(
 
         configBuffers[buffersCount++] = m_packedHeaderParameterBufferId;
 
+        MFX_DESTROY_VABUFFER(m_packedHeaderDataBufferId, m_vaDisplay);
         vaSts = vaCreateBuffer(m_vaDisplay,
                             m_vaContextEncode,
                             VAEncPackedHeaderDataBufferType,
@@ -1120,7 +1130,8 @@ mfxStatus VAAPIEncoder::Execute(
         // 11. quality level
         configBuffers[buffersCount++] = m_qualityLevelBufferId;
         // 12. temporal layers
-        configBuffers[buffersCount++] = m_tempLayersBufferId;
+        if (m_video.m_numLayers)
+            configBuffers[buffersCount++] = m_tempLayersBufferId;
     }
 
     assert(buffersCount <= configBuffers.size());
